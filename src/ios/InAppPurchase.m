@@ -298,6 +298,10 @@ unsigned char* unbase64( const char* ascii, int len, int *flen )
         [[SKPaymentQueue defaultQueue]  addTransactionObserver:self];
         observer = self;
     }
+    //Finish interrupted transactions
+    for (SKPaymentTransaction *transaction in [[SKPaymentQueue defaultQueue] transactions]) {
+        [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
+    }
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"InAppPurchase initialized"];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
