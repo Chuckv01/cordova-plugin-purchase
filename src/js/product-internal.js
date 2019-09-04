@@ -1,5 +1,5 @@
 (function() {
-"use strict";
+
 
 store.Product.prototype.set = function(key, value) {
     if (typeof key === 'string') {
@@ -37,7 +37,7 @@ store.Product.prototype.stateChanged = function() {
         this.trigger(this.state);
 };
 
-/// ### aliases to `store` methods, added for conveniance.
+/// ### aliases to `store` methods, added for convenience.
 store.Product.prototype.on = function(event, cb) {
     store.when(this.id, event, cb);
 };

@@ -5,8 +5,9 @@ var store = require("../tmp/store-test");
 var helper = require("./helper");
 
 describe('Verify', function() {
-    "use strict";
+    
 
+    var ajaxCopy = store.utils.ajax;
     before(function() {
         require("./helper").resetTest();
         store.register({
@@ -18,6 +19,8 @@ describe('Verify', function() {
 
     after(function() {
         helper.setTimeoutFactor(1);
+        store.utils.ajax = ajaxCopy;
+        store.verbosity = store.ERROR;
     });
 
     describe('#verify', function() {
@@ -113,6 +116,49 @@ describe('Verify', function() {
             }
 
             step();
+        });
+
+        it('should request an external server when validator is a string', function(done) {
+
+          var nCalls = 0;
+          var successCalled = 0;
+          var errorCalled = 0;
+          var doneCalled = 0;
+
+          function failedValidationAjax(options) {
+              ++nCalls;
+              assert.equal("http://the-url", options.url);
+              assert.equal("POST", options.method);
+              options.success({});
+          }
+
+          store.validator = "http://the-url";
+          // store.verbosity = store.DEBUG;
+
+          store.utils.ajax = failedValidationAjax;
+
+          var p = store.get("pf-consumable");
+          p.set('state', store.APPROVED);
+          helper.setTimeoutFactor(4000);
+
+          p.verify()
+          .success(function() {
+              successCalled ++;
+          })
+          .error(function(err) {
+              assert.equal(store.ERR_VERIFICATION_FAILED, err.code);
+              errorCalled ++;
+          })
+          .done(function() {
+              doneCalled ++;
+          });
+          setTimeout(function() {
+              assert.equal(nCalls, 5);
+              assert.equal(successCalled, 0, "success should be called");
+              assert.equal(errorCalled, 1,   "error should be called");
+              assert.equal(doneCalled, 1,    "done should be called");
+              done();
+          }, 200000);
         });
     });
 });
